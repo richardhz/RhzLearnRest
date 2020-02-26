@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models.Dtos;
+using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
 
@@ -18,9 +19,9 @@ namespace RhzLearnRest.Controllers
 
         [HttpGet()]
         [HttpHead()]
-        public ActionResult<IEnumerable<AuthorDto>> GetAuthors()
+        public ActionResult<IEnumerable<AuthorDto>> GetAuthors([FromQuery] AuthorResourceParameters authorsResourceParameters)
         {
-            return Ok(_manager.GetAuthors());
+            return Ok(_manager.GetAuthors(authorsResourceParameters));
         }
 
         [HttpGet("{authorId}")]

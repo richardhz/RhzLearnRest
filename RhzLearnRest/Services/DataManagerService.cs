@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models.Dtos;
+using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
 
@@ -25,6 +26,13 @@ namespace RhzLearnRest.Services
         public IEnumerable<AuthorDto> GetAuthors()
         {
             var x = _repo.GetAuthors();
+            return _mapper.Map<IEnumerable<AuthorDto>>(x);
+        }
+
+        public IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters)
+        {
+
+            var x = _repo.GetAuthors(authorResourceParameters );
             return _mapper.Map<IEnumerable<AuthorDto>>(x);
         }
 
