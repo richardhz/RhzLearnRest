@@ -9,8 +9,12 @@ namespace RhzLearnRest.Domains.Interfaces
     {
         IEnumerable<AuthorDto> GetAuthors();
         IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters);
+        IEnumerable<AuthorDto> GetAuthors(IEnumerable<Guid> authorIds);
         AuthorDto GetAuthor(Guid authId);
         IEnumerable<CourseDto> GetCoursesForAuthor(Guid authId);
         CourseDto GetCourseForAuthor(Guid authId, Guid courseId);
+        AuthorDto AddAuthor(NewAuthorDto author);
+        CourseDto AddCourseForAuthor(Guid authorId, NewCourseDto course);
+        IEnumerable<AuthorDto> AddAuthorCollection(IEnumerable<NewAuthorDto> authors);
     }
 }

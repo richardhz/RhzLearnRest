@@ -9,6 +9,7 @@ namespace RhzLearnRest.Profiles
         public CoursesProfile()
         {
             CreateMap<Course, CourseDto>();
+            CreateMap<NewCourseDto, Course>();
         }
     }
 }

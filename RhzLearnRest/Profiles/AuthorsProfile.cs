@@ -16,6 +16,8 @@ namespace RhzLearnRest.Profiles
                 .ForMember(
                     dest => dest.Age,
                     op => op.MapFrom(src => src.DateOfBirth.CurrentAge()));
+
+            CreateMap<NewAuthorDto, Author>();
         }
     }
 }

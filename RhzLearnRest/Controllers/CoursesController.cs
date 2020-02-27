@@ -23,11 +23,19 @@ namespace RhzLearnRest.Controllers
             return x == null ? NotFound() : (ActionResult<IEnumerable<CourseDto>>)Ok(x);
         }
 
-        [HttpGet("{courseId}")]
+        [HttpGet("{courseId}",Name = "GetCourseForAuthor")]
         public ActionResult<CourseDto> GetCourseForAuthor(Guid authorId, Guid courseId)
         {
             var x = _manager.GetCourseForAuthor(authorId, courseId);
             return x == null ? NotFound() : (ActionResult<CourseDto>)Ok(x);
+        }
+
+        [HttpPost]
+        public ActionResult<CourseDto> CreateCourseForAuthor(Guid authorId, NewCourseDto course)
+        {
+            var newCourse = _manager.AddCourseForAuthor(authorId, course);
+            return newCourse == null ? NotFound() : (ActionResult<CourseDto>)CreatedAtRoute("GetCourseForAuthor",
+                new { authorId, courseId = newCourse.Id },newCourse);
         }
     }
 }

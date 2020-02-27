@@ -24,11 +24,24 @@ namespace RhzLearnRest.Controllers
             return Ok(_manager.GetAuthors(authorsResourceParameters));
         }
 
-        [HttpGet("{authorId}")]
-        public ActionResult<IEnumerable<AuthorDto>> GetAuthor(Guid authorId)
+        [HttpGet("{authorId}",Name ="GetAuthor")]
+        public ActionResult<AuthorDto> GetAuthor(Guid authorId)
         {
             return Ok(_manager.GetAuthor(authorId));
         }
 
+        [HttpPost()]
+        public ActionResult<AuthorDto> CreateAuthor(NewAuthorDto author)
+        {
+           var newAuthor = _manager.AddAuthor(author);
+           return CreatedAtRoute("GetAuthor", new { authorId = newAuthor.Id }, newAuthor);
+        }
+
+        [HttpOptions]
+        public IActionResult GetAuthorOptions()
+        {
+            Response.Headers.Add("Allow", "GET,OPTIONS,POST");
+            return Ok();
+        }
     }
 }
