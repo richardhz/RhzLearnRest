@@ -7,7 +7,11 @@ namespace RhzLearnRest.Data
     {
         public RhzLearnRestContext(DbContextOptions<RhzLearnRestContext> options) :base(options)
         {
-            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            // In this project we are using change tracking.
+            // we are using autoMapper to change/mutate structers so when we want to 
+            // update we don't have to implement an update method because change tracking spots the 
+            // changes and will update on the save.
+            //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public virtual DbSet<Author> Authors { get; set; }

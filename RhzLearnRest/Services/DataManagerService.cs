@@ -108,5 +108,30 @@ namespace RhzLearnRest.Services
             _repo.Save();
             return _mapper.Map<IEnumerable<AuthorDto>>(authorEntities);
         }
+
+        public bool UpdateCourseForAuthor(Guid authorId, Guid courseId, UpdateCourseDto course)
+        {
+            if (!_repo.AuthorExists(authorId))
+            {
+                return false;
+            }
+
+            var courseToUpdate = _repo.GetCourse(authorId, courseId);
+
+            if (courseToUpdate == null)
+            {
+                return false;
+            }
+
+            // EF is tracking "courseToUpdate" so by executing the next line _mapper.Map the entity has changed 
+            // to a modified state so executing the Save will write the changes to the database. 
+            // We could just omit the Update statement, however this would be incorrect, in the future something 
+            // may change which would require some functionality in the update process. 
+            // The user of the repository does not need to know this.
+            _mapper.Map(course, courseToUpdate);
+            _repo.UpdateCourse(courseToUpdate);
+            _repo.Save();
+            return true;
+        }
     }
 }

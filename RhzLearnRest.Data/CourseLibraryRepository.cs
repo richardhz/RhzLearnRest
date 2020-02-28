@@ -68,6 +68,12 @@ namespace RhzLearnRest.Data
         public void UpdateCourse(Course course)
         {
             // no code in this implementation
+            // using automapper in conjunction with entity framework marks structures as changed
+            // so just saving will perform an update.
+            // Altough this method is not needed here, there are other circumstances where it might be.
+            // Remember, we are working to a contract (Interface) not an implementation.
+            // Always have a set of methods matching the required functionality and call them, even if 
+            // they don't do anything in the current implementation.
         }
 
         public void AddAuthor(Author author)

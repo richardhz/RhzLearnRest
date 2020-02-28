@@ -37,5 +37,12 @@ namespace RhzLearnRest.Controllers
             return newCourse == null ? NotFound() : (ActionResult<CourseDto>)CreatedAtRoute("GetCourseForAuthor",
                 new { authorId, courseId = newCourse.Id },newCourse);
         }
+
+        [HttpPut("{courseId}")]
+        public ActionResult UpdateCourseForAuthor(Guid authorId, Guid courseId, UpdateCourseDto course)
+        {
+            var x = _manager.UpdateCourseForAuthor(authorId, courseId,course);
+            return x ? NoContent() : (ActionResult)NotFound();
+        }
     }
 }

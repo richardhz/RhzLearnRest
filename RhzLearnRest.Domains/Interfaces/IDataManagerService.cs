@@ -16,5 +16,6 @@ namespace RhzLearnRest.Domains.Interfaces
         AuthorDto AddAuthor(NewAuthorDto author);
         CourseDto AddCourseForAuthor(Guid authorId, NewCourseDto course);
         IEnumerable<AuthorDto> AddAuthorCollection(IEnumerable<NewAuthorDto> authors);
+        bool UpdateCourseForAuthor(Guid authorId, Guid courseId, UpdateCourseDto course);
     }
 }
