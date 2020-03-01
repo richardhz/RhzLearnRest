@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models;
 using RhzLearnRest.Domains.Models.Dtos;
@@ -13,10 +15,16 @@ namespace RhzLearnRest.Services
     {
         private readonly ICourseLibraryRepository _repo;
         private readonly IMapper _mapper;
-        public DataManagerService(ICourseLibraryRepository repo, IMapper mapper)
+
+        // The DataManager service needs to use the controllers validation functionality so we must find a way to get the controller 
+        // into the service.
+        public object Controller { get; set; }
+
+        public DataManagerService(ICourseLibraryRepository repo, IMapper mapper )
         {
             _repo = repo ?? throw new ArgumentNullException(nameof(repo));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+           
         }
 
         public AuthorDto AddAuthor(NewAuthorDto author)
@@ -132,6 +140,35 @@ namespace RhzLearnRest.Services
             _repo.UpdateCourse(courseToUpdate);
             _repo.Save();
             return true;
+        }
+
+        public object PatchCourseForAuthor(Guid authorId, Guid courseId, JsonPatchDocument<UpdateCourseDto> patchDoc)
+        {
+            if (!_repo.AuthorExists(authorId))
+            {
+                return new NotFoundResult();
+            }
+
+            var courseToUpdate = _repo.GetCourse(authorId, courseId);
+
+            if (courseToUpdate == null)
+            {
+                return new NotFoundResult();
+            }
+
+            var courseToPatch = _mapper.Map<UpdateCourseDto>(courseToUpdate);
+            patchDoc.ApplyTo(courseToPatch);
+
+            if (!((ControllerBase)Controller).TryValidateModel(courseToPatch))
+            {
+                return ((ControllerBase)Controller).ValidationProblem(((ControllerBase)Controller).ModelState);
+            }
+
+            _mapper.Map(courseToPatch, courseToUpdate);
+            _repo.UpdateCourse(courseToUpdate);
+            _repo.Save();
+            return new NoContentResult();
+
         }
     }
 }

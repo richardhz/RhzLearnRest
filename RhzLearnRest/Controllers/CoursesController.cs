@@ -1,4 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models.Dtos;
 using System;
@@ -14,6 +19,7 @@ namespace RhzLearnRest.Controllers
         public CoursesController(IDataManagerService manager)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
+            _manager.Controller = this;
         }
 
         [HttpGet()]
@@ -43,6 +49,24 @@ namespace RhzLearnRest.Controllers
         {
             var x = _manager.UpdateCourseForAuthor(authorId, courseId,course);
             return x ? NoContent() : (ActionResult)NotFound();
+        }
+
+        [HttpPatch("{courseId}")]
+        public ActionResult PartialUpdateCourseForAuthor(Guid authorId,Guid courseId, JsonPatchDocument<UpdateCourseDto> patchDoc)
+        {
+            var x = (ActionResult)_manager.PatchCourseForAuthor(authorId, courseId, patchDoc);
+            //return x ? NoContent() : (ActionResult)NotFound();
+            return x;
+            
+        }
+
+        //We want this controller to use the APIBehavour configured in the startup file :- InvalidModelStateResponseFactory
+        //So we must override ValidationProblem.
+        public override ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
+        {
+            var options = HttpContext.RequestServices.GetRequiredService<IOptions<ApiBehaviorOptions>>();
+            return (ActionResult)options.Value.InvalidModelStateResponseFactory(ControllerContext);
+            
         }
     }
 }
