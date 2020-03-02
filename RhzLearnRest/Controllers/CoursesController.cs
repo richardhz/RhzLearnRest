@@ -60,6 +60,14 @@ namespace RhzLearnRest.Controllers
             
         }
 
+
+        [HttpDelete("{courseId}")]
+        public ActionResult DeleteCourseForAuthor(Guid authorId, Guid courseId)
+        {
+            var x = _manager.DeleteCourseForAuthor(authorId, courseId);
+            return x ? NoContent() : (ActionResult)NotFound();
+        }
+
         //We want this controller to use the APIBehavour configured in the startup file :- InvalidModelStateResponseFactory
         //So we must override ValidationProblem.
         public override ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)

@@ -37,6 +37,20 @@ namespace RhzLearnRest.Services
 
         }
 
+
+        public bool DeleteAuthor(Guid authorId)
+        {
+            var x = _repo.GetAuthor(authorId);
+            if (x == null)
+            {
+                return false;
+            }
+            _repo.DeleteAuthor(x);
+            _repo.Save();
+            return true;
+
+        }
+
         public AuthorDto GetAuthor(Guid authId)
         {
             var x = _repo.GetAuthor(authId);
@@ -142,6 +156,28 @@ namespace RhzLearnRest.Services
             return true;
         }
 
+
+        public bool DeleteCourseForAuthor(Guid authorId, Guid courseId)
+        {
+
+            if (!_repo.AuthorExists(authorId))
+            {
+                return false;
+            }
+
+            var courseToDelete = _repo.GetCourse(authorId, courseId);
+
+            if (courseToDelete == null)
+            {
+                return false;
+            }
+
+            _repo.DeleteCourse(courseToDelete);
+            _repo.Save();
+            return true;
+        }
+
+
         public object PatchCourseForAuthor(Guid authorId, Guid courseId, JsonPatchDocument<UpdateCourseDto> patchDoc)
         {
             if (!_repo.AuthorExists(authorId))
@@ -170,5 +206,7 @@ namespace RhzLearnRest.Services
             return new NoContentResult();
 
         }
+
+       
     }
 }

@@ -13,12 +13,14 @@ namespace RhzLearnRest.Domains.Interfaces
         IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters);
         IEnumerable<AuthorDto> GetAuthors(IEnumerable<Guid> authorIds);
         AuthorDto GetAuthor(Guid authId);
+        bool DeleteAuthor(Guid authorId);
         IEnumerable<CourseDto> GetCoursesForAuthor(Guid authId);
         CourseDto GetCourseForAuthor(Guid authId, Guid courseId);
         AuthorDto AddAuthor(NewAuthorDto author);
         CourseDto AddCourseForAuthor(Guid authorId, NewCourseDto course);
         IEnumerable<AuthorDto> AddAuthorCollection(IEnumerable<NewAuthorDto> authors);
         bool UpdateCourseForAuthor(Guid authorId, Guid courseId, UpdateCourseDto course);
+        bool DeleteCourseForAuthor(Guid authorId, Guid courseId);
         object PatchCourseForAuthor(Guid authorId, Guid courseId, JsonPatchDocument<UpdateCourseDto> patchDoc);
     }
 }

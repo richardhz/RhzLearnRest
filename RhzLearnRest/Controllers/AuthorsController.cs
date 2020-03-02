@@ -27,7 +27,8 @@ namespace RhzLearnRest.Controllers
         [HttpGet("{authorId}",Name ="GetAuthor")]
         public ActionResult<AuthorDto> GetAuthor(Guid authorId)
         {
-            return Ok(_manager.GetAuthor(authorId));
+            var x = _manager.GetAuthor(authorId);
+            return x == null ? NotFound() : (ActionResult<AuthorDto>)Ok(x);
         }
 
         [HttpPost()]
@@ -36,6 +37,16 @@ namespace RhzLearnRest.Controllers
            var newAuthor = _manager.AddAuthor(author);
            return CreatedAtRoute("GetAuthor", new { authorId = newAuthor.Id }, newAuthor);
         }
+
+        [HttpDelete("{authorId}")]
+        public ActionResult DeleteAuthor(Guid authorId)
+        {
+            var x = _manager.DeleteAuthor(authorId);
+            return x ? NoContent() : (ActionResult)NotFound();
+        }
+
+
+
 
         [HttpOptions]
         public IActionResult GetAuthorOptions()
