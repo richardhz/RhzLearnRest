@@ -17,7 +17,7 @@ namespace RhzLearnRest.Controllers
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
         }
 
-        [HttpGet()]
+        [HttpGet(Name = "GetAuthors")]
         [HttpHead()]
         public ActionResult<IEnumerable<AuthorDto>> GetAuthors([FromQuery] AuthorResourceParameters authorsResourceParameters)
         {
@@ -45,14 +45,12 @@ namespace RhzLearnRest.Controllers
             return x ? NoContent() : (ActionResult)NotFound();
         }
 
-
-
-
         [HttpOptions]
         public IActionResult GetAuthorOptions()
         {
             Response.Headers.Add("Allow", "GET,OPTIONS,POST");
             return Ok();
         }
+        
     }
 }

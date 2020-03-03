@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models;
 using RhzLearnRest.Domains.Models.Dtos;
+using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace RhzLearnRest.Services
 {
@@ -15,15 +17,17 @@ namespace RhzLearnRest.Services
     {
         private readonly ICourseLibraryRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IUrlHelper _urlHelper;
 
         // The DataManager service needs to use the controllers validation functionality so we must find a way to get the controller 
         // into the service.
         public object Controller { get; set; }
 
-        public DataManagerService(ICourseLibraryRepository repo, IMapper mapper )
+        public DataManagerService(ICourseLibraryRepository repo, IMapper mapper, IUrlHelper urlHelper )
         {
             _repo = repo ?? throw new ArgumentNullException(nameof(repo));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _urlHelper = urlHelper;
            
         }
 
@@ -67,6 +71,23 @@ namespace RhzLearnRest.Services
         {
 
             var x = _repo.GetAuthors(authorResourceParameters );
+
+            var previousPageLink = x.HasPrevious ? CreateAuthorsResourceUri(authorResourceParameters, ResourceUriType.PreviousPage) : null;
+            var nextPageLink = x.HasNext ? CreateAuthorsResourceUri(authorResourceParameters, ResourceUriType.NextPage) : null;
+
+            var pageMetaData = new
+            {
+                totalCount = x.TotalCount,
+                pageSize = x.PageSize,
+                currentPage = x.CurrentPage,
+                totalPages = x.TotalPages,
+                previousPageLink,
+                nextPageLink
+            };
+
+            _urlHelper.ActionContext.HttpContext.Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pageMetaData));
+
+
             return _mapper.Map<IEnumerable<AuthorDto>>(x);
         }
 
@@ -207,6 +228,42 @@ namespace RhzLearnRest.Services
 
         }
 
-       
+
+        private string CreateAuthorsResourceUri(
+           AuthorResourceParameters authorResourceParameters,
+           ResourceUriType type)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return _urlHelper.Link("GetAuthors",
+                        new
+                        {
+                            pageNumber = authorResourceParameters.PageNumber - 1,
+                            pageSize = authorResourceParameters.PageSize,
+                            mainCategory = authorResourceParameters.MainCategory,
+                            searchQuery = authorResourceParameters.SearchQuery
+                        });
+                case ResourceUriType.NextPage:
+                    return _urlHelper.Link("GetAuthors",
+                        new
+                        {
+                            pageNumber = authorResourceParameters.PageNumber + 1,
+                            pageSize = authorResourceParameters.PageSize,
+                            mainCategory = authorResourceParameters.MainCategory,
+                            searchQuery = authorResourceParameters.SearchQuery
+                        });
+                default:
+                    return _urlHelper.Link("GetAuthors",
+                        new
+                        {
+                            pageNumber = authorResourceParameters.PageNumber,
+                            pageSize = authorResourceParameters.PageSize,
+                            mainCategory = authorResourceParameters.MainCategory,
+                            searchQuery = authorResourceParameters.SearchQuery
+                        });
+            }
+        }
+
     }
 }

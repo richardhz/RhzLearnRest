@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +42,6 @@ namespace RhzLearnRest
                 new CamelCasePropertyNamesContractResolver();
             })
             .AddXmlDataContractSerializerFormatters()
-            
             .ConfigureApiBehaviorOptions(setupAction =>
             {
                 setupAction.InvalidModelStateResponseFactory = context =>
@@ -63,6 +64,7 @@ namespace RhzLearnRest
                 };
             });
 
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddDbContext<RhzLearnRestContext>(options => options.UseSqlServer(
@@ -83,6 +85,14 @@ namespace RhzLearnRest
                     .AllowAnyHeader();
                 })
             );
+
+            // The following makes the appropriate IUrlHelper available to any service <see DataManagerService> 
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<IUrlHelper>(x => {
+                var actionContext = x.GetRequiredService<IActionContextAccessor>().ActionContext;
+                var factory = x.GetRequiredService<IUrlHelperFactory>();
+                return factory.GetUrlHelper(actionContext);
+            });
 
             services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
             services.AddScoped<IDataManagerService, DataManagerService>();

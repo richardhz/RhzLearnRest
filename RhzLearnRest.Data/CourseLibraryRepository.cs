@@ -1,5 +1,6 @@
 ﻿using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models;
+using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
@@ -129,18 +130,14 @@ namespace RhzLearnRest.Data
             return _context.Authors.ToList<Author>();
         }
 
-        public IEnumerable<Author> GetAuthors(AuthorResourceParameters authorsResourceParameters)
+        public PagedList<Author> GetAuthors(AuthorResourceParameters authorsResourceParameters)
         {
             if (authorsResourceParameters == null)
             {
                 throw new ArgumentNullException(nameof(authorsResourceParameters));
             }
 
-            if (string.IsNullOrWhiteSpace(authorsResourceParameters.MainCategory) 
-                && string.IsNullOrWhiteSpace(authorsResourceParameters.SearchQuery))
-            {
-                return GetAuthors();
-            }
+            
 
             var collection = _context.Authors as IQueryable<Author>;
 
@@ -159,7 +156,10 @@ namespace RhzLearnRest.Data
                 || a.LastName.Contains(searchQuery));
             }
 
-            return collection.ToList();
+            return PagedList<Author>.Create(collection,
+                authorsResourceParameters.PageNumber,
+                authorsResourceParameters.PageSize);
+                
 
         }
 
