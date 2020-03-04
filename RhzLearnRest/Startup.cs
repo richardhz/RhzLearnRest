@@ -64,7 +64,9 @@ namespace RhzLearnRest
                 };
             });
 
-
+            // We register the property mapping service as transient, this is the Microsoft recommended lifetime 
+            // for lightweight stateless services.
+            services.AddTransient<IPropertyMappingService, PropertyMappingService>(); 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddDbContext<RhzLearnRestContext>(options => options.UseSqlServer(

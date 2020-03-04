@@ -18,16 +18,18 @@ namespace RhzLearnRest.Services
         private readonly ICourseLibraryRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
+        private readonly IPropertyMappingService _propertyMapper;
 
         // The DataManager service needs to use the controllers validation functionality so we must find a way to get the controller 
         // into the service.
         public object Controller { get; set; }
 
-        public DataManagerService(ICourseLibraryRepository repo, IMapper mapper, IUrlHelper urlHelper )
+        public DataManagerService(ICourseLibraryRepository repo, IMapper mapper, IUrlHelper urlHelper, IPropertyMappingService propertyMapper )
         {
             _repo = repo ?? throw new ArgumentNullException(nameof(repo));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper;
+            _propertyMapper = propertyMapper;
            
         }
 
@@ -69,6 +71,11 @@ namespace RhzLearnRest.Services
 
         public IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters)
         {
+
+            if (!_propertyMapper.ValidMappingExistsFor<AuthorDto,Author>(authorResourceParameters.OrderBy))
+            {
+                return null;
+            }
 
             var x = _repo.GetAuthors(authorResourceParameters );
 
@@ -239,6 +246,7 @@ namespace RhzLearnRest.Services
                     return _urlHelper.Link("GetAuthors",
                         new
                         {
+                            orderBy = authorResourceParameters.OrderBy,
                             pageNumber = authorResourceParameters.PageNumber - 1,
                             pageSize = authorResourceParameters.PageSize,
                             mainCategory = authorResourceParameters.MainCategory,
@@ -248,6 +256,7 @@ namespace RhzLearnRest.Services
                     return _urlHelper.Link("GetAuthors",
                         new
                         {
+                            orderBy = authorResourceParameters.OrderBy,
                             pageNumber = authorResourceParameters.PageNumber + 1,
                             pageSize = authorResourceParameters.PageSize,
                             mainCategory = authorResourceParameters.MainCategory,
@@ -257,6 +266,7 @@ namespace RhzLearnRest.Services
                     return _urlHelper.Link("GetAuthors",
                         new
                         {
+                            orderBy = authorResourceParameters.OrderBy,
                             pageNumber = authorResourceParameters.PageNumber,
                             pageSize = authorResourceParameters.PageSize,
                             mainCategory = authorResourceParameters.MainCategory,

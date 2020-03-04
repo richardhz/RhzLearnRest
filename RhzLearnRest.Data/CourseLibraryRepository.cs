@@ -1,5 +1,6 @@
 ﻿using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models;
+using RhzLearnRest.Domains.Models.Dtos;
 using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
@@ -11,10 +12,11 @@ namespace RhzLearnRest.Data
     public class CourseLibraryRepository : ICourseLibraryRepository
     {
         private readonly RhzLearnRestContext _context;
-
-        public CourseLibraryRepository(RhzLearnRestContext context)
+        private readonly IPropertyMappingService _propertyMappingService;
+        public CourseLibraryRepository(RhzLearnRestContext context, IPropertyMappingService propertyMappingService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _propertyMappingService = propertyMappingService;
         }
 
         public void AddCourse(Guid authorId, Course course)
@@ -154,6 +156,12 @@ namespace RhzLearnRest.Data
                 collection = collection.Where(a => a.MainCategory.Contains(searchQuery)
                 || a.FirstName.Contains(searchQuery)
                 || a.LastName.Contains(searchQuery));
+            }
+
+            if (!string.IsNullOrWhiteSpace(authorsResourceParameters.OrderBy))
+            {
+                var _authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<AuthorDto, Author>();
+                collection = collection.ApplySort(authorsResourceParameters.OrderBy, _authorPropertyMappingDictionary);
             }
 
             return PagedList<Author>.Create(collection,

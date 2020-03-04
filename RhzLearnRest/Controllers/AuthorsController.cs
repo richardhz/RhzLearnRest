@@ -21,7 +21,8 @@ namespace RhzLearnRest.Controllers
         [HttpHead()]
         public ActionResult<IEnumerable<AuthorDto>> GetAuthors([FromQuery] AuthorResourceParameters authorsResourceParameters)
         {
-            return Ok(_manager.GetAuthors(authorsResourceParameters));
+            var x = _manager.GetAuthors(authorsResourceParameters);
+            return x == null ? BadRequest() : (ActionResult<IEnumerable<AuthorDto>>)Ok(x);
         }
 
         [HttpGet("{authorId}",Name ="GetAuthor")]
