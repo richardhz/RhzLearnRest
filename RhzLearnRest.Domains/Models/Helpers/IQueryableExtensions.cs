@@ -26,11 +26,14 @@ namespace RhzLearnRest.Domains.Models.Helpers
                 return source;
             }
 
+            var orderByString = string.Empty;
+
             var orderByAfterSplit = orderBy.Split(',');
 
             // apply each orderBy clause in reverse order 
             // otherwise IQueryable will be in the wrong order
-            foreach(var orderByClause in orderByAfterSplit.Reverse())
+            // the reverse has been removed after reading item in discussion
+            foreach(var orderByClause in orderByAfterSplit)
             {
                 var trimmedClause = orderByClause.Trim();
                 var orderDescending = trimmedClause.EndsWith(" desc");
@@ -51,17 +54,20 @@ namespace RhzLearnRest.Domains.Models.Helpers
                     throw new ArgumentNullException("propertyMappingValue");
                 }
 
-                foreach (var destinationProperty in propertyMappingValue.DestinationProperties.Reverse())
+                foreach (var destinationProperty in propertyMappingValue.DestinationProperties)
                 {
                     if (propertyMappingValue.Revert)
                     {
                         orderDescending = !orderDescending;
                     }
-                    source = source.OrderBy(destinationProperty + (orderDescending ? " descending" : " ascending"));
+                    orderByString = orderByString +
+                        (string.IsNullOrWhiteSpace(orderByString) ? string.Empty : ", ")
+                        + destinationProperty
+                        + (orderDescending ? " descending" : " ascending");
 
                 } 
             }
-            return source;
+            return source.OrderBy(orderByString);
 
         }
     }
