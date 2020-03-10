@@ -246,6 +246,7 @@ namespace RhzLearnRest.Services
                     return _urlHelper.Link("GetAuthors",
                         new
                         {
+                            fields = authorResourceParameters.Fields,
                             orderBy = authorResourceParameters.OrderBy,
                             pageNumber = authorResourceParameters.PageNumber - 1,
                             pageSize = authorResourceParameters.PageSize,
@@ -256,6 +257,7 @@ namespace RhzLearnRest.Services
                     return _urlHelper.Link("GetAuthors",
                         new
                         {
+                            fields = authorResourceParameters.Fields,
                             orderBy = authorResourceParameters.OrderBy,
                             pageNumber = authorResourceParameters.PageNumber + 1,
                             pageSize = authorResourceParameters.PageSize,
@@ -266,6 +268,7 @@ namespace RhzLearnRest.Services
                     return _urlHelper.Link("GetAuthors",
                         new
                         {
+                            fields = authorResourceParameters.Fields,
                             orderBy = authorResourceParameters.OrderBy,
                             pageNumber = authorResourceParameters.PageNumber,
                             pageSize = authorResourceParameters.PageSize,

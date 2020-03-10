@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models.Dtos;
+using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
@@ -12,24 +13,37 @@ namespace RhzLearnRest.Controllers
     public class AuthorsController : ControllerBase
     {
         private readonly IDataManagerService _manager;
-        public AuthorsController(IDataManagerService manager)
+        private readonly IPropertyCheckerService _propertyCheck;
+        public AuthorsController(IDataManagerService manager, IPropertyCheckerService propertyChecker)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
+            _propertyCheck = propertyChecker ?? throw new ArgumentNullException(nameof(propertyChecker));
         }
 
         [HttpGet(Name = "GetAuthors")]
         [HttpHead()]
-        public ActionResult<IEnumerable<AuthorDto>> GetAuthors([FromQuery] AuthorResourceParameters authorsResourceParameters)
+        public IActionResult GetAuthors([FromQuery] AuthorResourceParameters authorsResourceParameters)
         {
+            if (!_propertyCheck.TypeHasProperties<AuthorDto>(authorsResourceParameters.Fields))
+            {
+                return BadRequest();
+            }
+
             var x = _manager.GetAuthors(authorsResourceParameters);
-            return x == null ? BadRequest() : (ActionResult<IEnumerable<AuthorDto>>)Ok(x);
+            return x == null ? BadRequest() : (IActionResult)Ok(x.ShapeData(authorsResourceParameters.Fields));
         }
 
         [HttpGet("{authorId}",Name ="GetAuthor")]
-        public ActionResult<AuthorDto> GetAuthor(Guid authorId)
+        public IActionResult GetAuthor(Guid authorId,string fields)
         {
+
+            if (!_propertyCheck.TypeHasProperties<AuthorDto>(fields))
+            {
+                return BadRequest();
+            }
+
             var x = _manager.GetAuthor(authorId);
-            return x == null ? NotFound() : (ActionResult<AuthorDto>)Ok(x);
+            return x == null ? NotFound() : (IActionResult)Ok(x.ShapeData(fields));
         }
 
         [HttpPost()]
