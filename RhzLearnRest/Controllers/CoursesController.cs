@@ -22,7 +22,7 @@ namespace RhzLearnRest.Controllers
             _manager.Controller = this;
         }
 
-        [HttpGet()]
+        [HttpGet(Name ="GetCoursesForAuthor")]
         public ActionResult<IEnumerable<CourseDto>> GetCoursesForAuthor(Guid authorId)
         {
             IEnumerable<CourseDto> x = _manager.GetCoursesForAuthor(authorId);
@@ -36,7 +36,7 @@ namespace RhzLearnRest.Controllers
             return x == null ? NotFound() : (ActionResult<CourseDto>)Ok(x);
         }
 
-        [HttpPost]
+        [HttpPost(Name = "CrateCourseForAuthor")]
         public ActionResult<CourseDto> CreateCourseForAuthor(Guid authorId, NewCourseDto course)
         {
             var newCourse = _manager.AddCourseForAuthor(authorId, course);

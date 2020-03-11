@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models.Dtos;
 using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RhzLearnRest.Controllers
 {
@@ -12,11 +14,13 @@ namespace RhzLearnRest.Controllers
     [Route("api/authors")]
     public class AuthorsController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly IDataManagerService _manager;
         private readonly IPropertyCheckerService _propertyCheck;
-        public AuthorsController(IDataManagerService manager, IPropertyCheckerService propertyChecker)
+        public AuthorsController(IDataManagerService manager, IPropertyCheckerService propertyChecker, IMapper mapper)
         {
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _propertyCheck = propertyChecker ?? throw new ArgumentNullException(nameof(propertyChecker));
         }
 
@@ -30,7 +34,30 @@ namespace RhzLearnRest.Controllers
             }
 
             var x = _manager.GetAuthors(authorsResourceParameters);
-            return x == null ? BadRequest() : (IActionResult)Ok(x.ShapeData(authorsResourceParameters.Fields));
+            if (x == null)
+            {
+                return NotFound();
+            }
+
+            var links = CreateLinksForAuthors(authorsResourceParameters,x.HasNext,x.HasPrevious);
+
+            var shapedAuthors = _mapper.Map<IEnumerable<AuthorDto>>(x).ShapeData(authorsResourceParameters.Fields);
+
+            var shapedAuthorsWithLinks = shapedAuthors.Select(author =>
+            {
+                var authorAsDictionary = author as IDictionary<string, object>;
+                var authorLinks = CreateLinksForAuthor((Guid)authorAsDictionary["Id"], null);
+                authorAsDictionary.Add("links", authorLinks);
+                return authorAsDictionary;
+            });
+
+            var LinkedCollectionResource = new
+            {
+                value = shapedAuthorsWithLinks,
+                links
+            };
+
+            return Ok(LinkedCollectionResource);
         }
 
         [HttpGet("{authorId}",Name ="GetAuthor")]
@@ -43,17 +70,30 @@ namespace RhzLearnRest.Controllers
             }
 
             var x = _manager.GetAuthor(authorId);
-            return x == null ? NotFound() : (IActionResult)Ok(x.ShapeData(fields));
+            if (x == null)
+            {
+                return NotFound();
+            }
+
+            var linkedResourceToReturn = x.ShapeData(fields) as IDictionary<string, object>;
+            var links = CreateLinksForAuthor(authorId, fields);
+            linkedResourceToReturn.Add("links", links);
+
+            return Ok(linkedResourceToReturn);
         }
 
-        [HttpPost()]
+        [HttpPost(Name = "CreateAuthor")]
         public ActionResult<AuthorDto> CreateAuthor(NewAuthorDto author)
         {
-           var newAuthor = _manager.AddAuthor(author);
-           return CreatedAtRoute("GetAuthor", new { authorId = newAuthor.Id }, newAuthor);
+            var newAuthor = _manager.AddAuthor(author);
+            var linkedResourceToReturn = newAuthor.ShapeData(null) as IDictionary<string, object>;
+            var links = CreateLinksForAuthor(newAuthor.Id, null);
+            linkedResourceToReturn.Add("links", links);
+
+            return CreatedAtRoute("GetAuthor", new { authorId = linkedResourceToReturn["Id"] }, linkedResourceToReturn);
         }
 
-        [HttpDelete("{authorId}")]
+        [HttpDelete("{authorId}", Name = "DeleteAuthor")]
         public ActionResult DeleteAuthor(Guid authorId)
         {
             var x = _manager.DeleteAuthor(authorId);
@@ -66,6 +106,46 @@ namespace RhzLearnRest.Controllers
             Response.Headers.Add("Allow", "GET,OPTIONS,POST");
             return Ok();
         }
-        
+
+        private IEnumerable<LinkDto> CreateLinksForAuthor(Guid authorId, string fields)
+        {
+            var links = new List<LinkDto>();
+
+            if (string.IsNullOrWhiteSpace(fields))
+            {
+                links.Add(new LinkDto(Url.Link("GetAuthor", new { authorId }), "self", "GET"));
+            } 
+            else
+            {
+                links.Add(new LinkDto(Url.Link("GetAuthor", new { authorId, fields }), "self", "GET"));
+            }
+
+            links.Add(new LinkDto(Url.Link("DeleteAuthor", new { authorId }), "delete_author", "DELETE"));
+
+            links.Add(new LinkDto(Url.Link("CrateCourseForAuthor", new { authorId }), "create_course_for_author", "POST"));
+
+            links.Add(new LinkDto(Url.Link("GetCoursesForAuthor", new { authorId }), "courses", "GET"));
+
+
+            return links;
+        }
+
+
+        private IEnumerable<LinkDto> CreateLinksForAuthors(AuthorResourceParameters authorsResourceParameters,bool hasNext, bool hasPrevious)
+        {
+            var links = new List<LinkDto>();
+            links.Add(new LinkDto(_manager.CreateAuthorsResourceUri(authorsResourceParameters,ResourceUriType.Current),"self","GET"));
+            if (hasNext)
+            {
+                links.Add(new LinkDto(_manager.CreateAuthorsResourceUri(authorsResourceParameters, ResourceUriType.NextPage), "nextPage", "GET"));
+            }
+            if (hasPrevious)
+            {
+                links.Add(new LinkDto(_manager.CreateAuthorsResourceUri(authorsResourceParameters, ResourceUriType.PreviousPage), "previousPage", "GET"));
+            }
+            return links;
+        }
+
+
     }
 }

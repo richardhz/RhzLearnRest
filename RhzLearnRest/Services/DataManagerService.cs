@@ -69,7 +69,8 @@ namespace RhzLearnRest.Services
             return _mapper.Map<IEnumerable<AuthorDto>>(x);
         }
 
-        public IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters)
+        //public IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters)
+        public PagedList<Author> GetAuthors(AuthorResourceParameters authorResourceParameters)
         {
 
             if (!_propertyMapper.ValidMappingExistsFor<AuthorDto,Author>(authorResourceParameters.OrderBy))
@@ -79,23 +80,21 @@ namespace RhzLearnRest.Services
 
             var x = _repo.GetAuthors(authorResourceParameters );
 
-            var previousPageLink = x.HasPrevious ? CreateAuthorsResourceUri(authorResourceParameters, ResourceUriType.PreviousPage) : null;
-            var nextPageLink = x.HasNext ? CreateAuthorsResourceUri(authorResourceParameters, ResourceUriType.NextPage) : null;
+            //var previousPageLink = x.HasPrevious ? CreateAuthorsResourceUri(authorResourceParameters, ResourceUriType.PreviousPage) : null;
+            //var nextPageLink = x.HasNext ? CreateAuthorsResourceUri(authorResourceParameters, ResourceUriType.NextPage) : null;
 
             var pageMetaData = new
             {
                 totalCount = x.TotalCount,
                 pageSize = x.PageSize,
                 currentPage = x.CurrentPage,
-                totalPages = x.TotalPages,
-                previousPageLink,
-                nextPageLink
+                totalPages = x.TotalPages
             };
 
             _urlHelper.ActionContext.HttpContext.Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pageMetaData));
 
 
-            return _mapper.Map<IEnumerable<AuthorDto>>(x);
+            return x;// _mapper.Map<IEnumerable<AuthorDto>>(x);
         }
 
         public IEnumerable<AuthorDto> GetAuthors(IEnumerable<Guid> authorIds)
@@ -236,7 +235,7 @@ namespace RhzLearnRest.Services
         }
 
 
-        private string CreateAuthorsResourceUri(
+        public string CreateAuthorsResourceUri(
            AuthorResourceParameters authorResourceParameters,
            ResourceUriType type)
         {
@@ -264,6 +263,7 @@ namespace RhzLearnRest.Services
                             mainCategory = authorResourceParameters.MainCategory,
                             searchQuery = authorResourceParameters.SearchQuery
                         });
+                case ResourceUriType.Current:
                 default:
                     return _urlHelper.Link("GetAuthors",
                         new

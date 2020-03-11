@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
+using RhzLearnRest.Domains.Models;
 using RhzLearnRest.Domains.Models.Dtos;
+using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,7 @@ namespace RhzLearnRest.Domains.Interfaces
     {
         public object Controller { get; set; }
         IEnumerable<AuthorDto> GetAuthors();
-        IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters);
+        PagedList<Author> GetAuthors(AuthorResourceParameters authorResourceParameters);
         IEnumerable<AuthorDto> GetAuthors(IEnumerable<Guid> authorIds);
         AuthorDto GetAuthor(Guid authId);
         bool DeleteAuthor(Guid authorId);
@@ -22,5 +24,6 @@ namespace RhzLearnRest.Domains.Interfaces
         bool UpdateCourseForAuthor(Guid authorId, Guid courseId, UpdateCourseDto course);
         bool DeleteCourseForAuthor(Guid authorId, Guid courseId);
         object PatchCourseForAuthor(Guid authorId, Guid courseId, JsonPatchDocument<UpdateCourseDto> patchDoc);
+        string CreateAuthorsResourceUri(AuthorResourceParameters authorResourceParameters, ResourceUriType type);
     }
 }
