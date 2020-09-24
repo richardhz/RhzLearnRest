@@ -5,6 +5,7 @@ using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models;
 using RhzLearnRest.Domains.Models.Dtos;
 using RhzLearnRest.Domains.Models.Helpers;
+using RhzLearnRest.Domains.Models.PropertyMapping;
 using RhzLearnRest.Domains.Models.ResourceParameters;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace RhzLearnRest.Services
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
         private readonly IPropertyMappingService _propertyMapper;
+        private Dictionary<string, PropertyMappingValue> _authorPropertyMapping;
 
         // The DataManager service needs to use the controllers validation functionality so we must find a way to get the controller 
         // into the service.
@@ -30,8 +32,18 @@ namespace RhzLearnRest.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper;
             _propertyMapper = propertyMapper;
-           
-        }
+
+            _authorPropertyMapping = new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"Id", new PropertyMappingValue(new List<string> {"Id"}) },
+                {"MainCategory", new PropertyMappingValue(new List<string> {"MainCategory"})},
+                {"Age", new PropertyMappingValue(new List<string> {"DateOfBirth"})},
+                {"Name", new PropertyMappingValue(new List<string> {"FirstName","LastName"})}
+            };
+
+            _propertyMapper.Init<AuthorDto, Author>(_authorPropertyMapping);
+
+    }
 
         public AuthorDto AddAuthor(NewAuthorDto author)
         {
@@ -57,9 +69,13 @@ namespace RhzLearnRest.Services
 
         }
 
-        public AuthorDto GetAuthor(Guid authId)
+        public object GetAuthor(Guid authId, bool full = false)
         {
             var x = _repo.GetAuthor(authId);
+            if (full)
+            {
+                return _mapper.Map<AuthorFullDto>(x);
+            }
             return _mapper.Map<AuthorDto>(x);
         }
 
@@ -72,11 +88,14 @@ namespace RhzLearnRest.Services
         //public IEnumerable<AuthorDto> GetAuthors(AuthorResourceParameters authorResourceParameters)
         public PagedList<Author> GetAuthors(AuthorResourceParameters authorResourceParameters)
         {
-
-            if (!_propertyMapper.ValidMappingExistsFor<AuthorDto,Author>(authorResourceParameters.OrderBy))
+            if(!string.IsNullOrWhiteSpace(authorResourceParameters.OrderBy))
             {
-                return null;
+                if (!_propertyMapper.ValidMappingExistsFor<AuthorDto, Author>(authorResourceParameters.OrderBy))
+                {
+                    return null;
+                }
             }
+            
 
             var x = _repo.GetAuthors(authorResourceParameters );
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -14,8 +15,10 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using RhzLearnRest.Data;
 using RhzLearnRest.Domains.Interfaces;
+using RhzLearnRest.Domains.Models.Helpers;
 using RhzLearnRest.Services;
 using System;
+using System.Linq;
 
 namespace RhzLearnRest
 {
@@ -64,9 +67,22 @@ namespace RhzLearnRest
                 };
             });
 
+            services.Configure<MvcOptions>(config => 
+            {
+                var newtonsoftJsonOutputFormatter = config.OutputFormatters.OfType<NewtonsoftJsonOutputFormatter>()?.FirstOrDefault();
+                if (newtonsoftJsonOutputFormatter != null)
+                {
+                    newtonsoftJsonOutputFormatter.SupportedMediaTypes.Add(VendorMediaTypes.Hateoas);
+                    newtonsoftJsonOutputFormatter.SupportedMediaTypes.Add(VendorMediaTypes.FriendlyWithHateoas);
+                    newtonsoftJsonOutputFormatter.SupportedMediaTypes.Add(VendorMediaTypes.FriendlyWithoutHateoas);
+                    newtonsoftJsonOutputFormatter.SupportedMediaTypes.Add(VendorMediaTypes.FullWithHateoas);
+                    newtonsoftJsonOutputFormatter.SupportedMediaTypes.Add(VendorMediaTypes.FullWithoutHateoas);
+                }
+            });
+
             // We register the property mapping service as transient, this is the Microsoft recommended lifetime 
             // for lightweight stateless services.
-            services.AddTransient<IPropertyMappingService, PropertyMappingService>();
+            services.AddScoped<IPropertyMappingService, PropertyMappingService>();
             services.AddTransient<IPropertyCheckerService, PropertyCheckerService>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

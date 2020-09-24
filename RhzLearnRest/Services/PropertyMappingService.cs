@@ -1,31 +1,18 @@
 ﻿using RhzLearnRest.Domains.Interfaces;
-using RhzLearnRest.Domains.Models;
-using RhzLearnRest.Domains.Models.Dtos;
 using RhzLearnRest.Domains.Models.PropertyMapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RhzLearnRest.Services
 {
     public class PropertyMappingService : IPropertyMappingService
     {
-        private Dictionary<string, PropertyMappingValue> _authorPropertyMapping =
-            new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
-            {
-                {"Id", new PropertyMappingValue(new List<string> {"Id"}) },
-                {"MainCategory", new PropertyMappingValue(new List<string> {"MainCategory"})},
-                {"Age", new PropertyMappingValue(new List<string> {"DateOfBirth"})},
-                {"Name", new PropertyMappingValue(new List<string> {"FirstName","LastName"})}
-            };
-
         private IList<IPropertyMapping> _propertyMappings = new List<IPropertyMapping>();
 
-
-        public PropertyMappingService()
+        public void Init<TDto,TObj>(Dictionary<string, PropertyMappingValue> propertyMapping)
         {
-            _propertyMappings.Add(new PropertyMapping<AuthorDto, Author>(_authorPropertyMapping));
+            _propertyMappings.Add(new PropertyMapping<TDto, TObj>(propertyMapping));
         }
 
         public bool ValidMappingExistsFor<TSource,TDestinatoon>(string fields)

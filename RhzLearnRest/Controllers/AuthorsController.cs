@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using RhzLearnRest.Domains.Interfaces;
 using RhzLearnRest.Domains.Models.Dtos;
 using RhzLearnRest.Domains.Models.Helpers;
@@ -61,25 +62,52 @@ namespace RhzLearnRest.Controllers
         }
 
         [HttpGet("{authorId}",Name ="GetAuthor")]
-        public IActionResult GetAuthor(Guid authorId,string fields)
+        
+        public IActionResult GetAuthor(Guid authorId,string fields, [FromHeader(Name = "Accept")] string mediaType)
         {
+
+            if (!MediaTypeHeaderValue.TryParse(mediaType, out MediaTypeHeaderValue parsedMediaType)) 
+            {
+                return BadRequest();
+            }
 
             if (!_propertyCheck.TypeHasProperties<AuthorDto>(fields))
             {
                 return BadRequest();
             }
 
-            var x = _manager.GetAuthor(authorId);
+            var fulldata = VendorMediaTypes.Full(parsedMediaType.SubTypeWithoutSuffix.ToString());
+            var x = _manager.GetAuthor(authorId,fulldata);
+           
             if (x == null)
             {
                 return NotFound();
             }
 
-            var linkedResourceToReturn = x.ShapeData(fields) as IDictionary<string, object>;
-            var links = CreateLinksForAuthor(authorId, fields);
-            linkedResourceToReturn.Add("links", links);
+            var includeLinks = VendorMediaTypes.WithHateoas(parsedMediaType.SubTypeWithoutSuffix.ToString());
 
-            return Ok(linkedResourceToReturn);
+            IEnumerable<LinkDto> links = new List<LinkDto>();
+            if (includeLinks)
+            {
+                links = CreateLinksForAuthor(authorId, fields);
+            }
+
+            var primaryMediaType = includeLinks ? parsedMediaType.SubTypeWithoutSuffix.Substring(0, parsedMediaType.SubTypeWithoutSuffix.Length - 8) : parsedMediaType.SubTypeWithoutSuffix;
+
+            if (fulldata)
+            {
+                var linkedResourceToReturn = ((AuthorFullDto)x).ShapeData(fields) as IDictionary<string, object>;
+                if (includeLinks)
+                    linkedResourceToReturn.Add("links", links);
+                return Ok(linkedResourceToReturn);
+            }
+            else
+            {
+                var linkedResourceToReturn = ((AuthorDto)x).ShapeData(fields) as IDictionary<string, object>;
+                if (includeLinks)
+                    linkedResourceToReturn.Add("links", links);
+                return Ok(linkedResourceToReturn);
+            }
         }
 
         [HttpPost(Name = "CreateAuthor")]

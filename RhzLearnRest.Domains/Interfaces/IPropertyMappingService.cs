@@ -7,5 +7,6 @@ namespace RhzLearnRest.Domains.Interfaces
     {
         Dictionary<string, PropertyMappingValue> GetPropertyMapping<TSource, TDestination>();
         bool ValidMappingExistsFor<TSource, TDestinatoon>(string fields);
+        void Init<TDto, TObj>(Dictionary<string, PropertyMappingValue> propertyMapping);
     }
 }

@@ -10,7 +10,11 @@ using System.Linq;
 namespace RhzLearnRest.Data
 {
     public class CourseLibraryRepository : ICourseLibraryRepository
-    {
+    {   /*
+         * Please Note: This repo should only be referenced via the DataManager Service
+         * this is because it references the generic PropertyMapping service which has a lifetime of Scoped
+         * and is initialized by the DataManager Service.
+         */
         private readonly RhzLearnRestContext _context;
         private readonly IPropertyMappingService _propertyMappingService;
         public CourseLibraryRepository(RhzLearnRestContext context, IPropertyMappingService propertyMappingService)

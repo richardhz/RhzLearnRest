@@ -14,7 +14,7 @@ namespace RhzLearnRest.Domains.Interfaces
         IEnumerable<AuthorDto> GetAuthors();
         PagedList<Author> GetAuthors(AuthorResourceParameters authorResourceParameters);
         IEnumerable<AuthorDto> GetAuthors(IEnumerable<Guid> authorIds);
-        AuthorDto GetAuthor(Guid authId);
+        Object GetAuthor(Guid authId, bool full = false);
         bool DeleteAuthor(Guid authorId);
         IEnumerable<CourseDto> GetCoursesForAuthor(Guid authId);
         CourseDto GetCourseForAuthor(Guid authId, Guid courseId);
